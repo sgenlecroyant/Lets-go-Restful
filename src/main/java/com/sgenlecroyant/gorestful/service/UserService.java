@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sgenlecroyant.gorestful.entity.User;
+import com.sgenlecroyant.gorestful.exception.ResourceNotFoundException;
 import com.sgenlecroyant.gorestful.repository.UserRepository;
 
 @Service(value = "userService")
@@ -22,7 +23,7 @@ public class UserService {
 	public User fetchUserById(Integer id) {
 		return this.userRepository.findById(id)
 							.orElseThrow(() -> {
-								return new RuntimeException("");
+								return new ResourceNotFoundException("Invalid ID: " +id);
 							});
 	}
 	
