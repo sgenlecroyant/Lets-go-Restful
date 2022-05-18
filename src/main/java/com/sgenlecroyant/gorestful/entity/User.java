@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.SequenceGenerators;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity(name = "users")
 @Table(name = "users")
@@ -18,9 +20,12 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_sequence")
 	private Integer id;
+	@NotNull(message = "first name should never be null")
 	private String firstName;
+	@NotNull(message = "last name should never be null")
 	private String lastName;
 	private String username;
+	@Size(min = 5, max = 30, message = "password length 5-30")
 	private String password;
 
 	public User() {

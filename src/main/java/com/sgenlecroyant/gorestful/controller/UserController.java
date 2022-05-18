@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class UserController {
 	private UserService userService;
 	
 	@PostMapping(value = "/users")
-	private ResponseEntity<User> saveUser(@RequestBody(required = true) User user) {
+	private ResponseEntity<User> saveUser(@Valid @RequestBody(required = true) User user) {
 		
 		User savedUser = this.userService.saveUser(user);
 		URI localtion = ServletUriComponentsBuilder
