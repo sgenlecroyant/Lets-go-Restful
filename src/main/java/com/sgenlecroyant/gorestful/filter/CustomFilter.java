@@ -1,7 +1,5 @@
 package com.sgenlecroyant.gorestful.filter;
 
-import java.util.List;
-
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Service;
 
@@ -11,26 +9,26 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 @Service(value = "customFilter")
 public class CustomFilter {
-	
-	
-	private PropertyFilter getPropsFilter(String...props) {
+
+	private PropertyFilter getPropsFilter(String... props) {
 		PropertyFilter propertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept(props);
 		return propertyFilter;
 	}
-	
-	public SimpleFilterProvider getFilterProvider(String filterId, String ...props) {
-		
-		SimpleFilterProvider filterProvider = 
-				new SimpleFilterProvider();
+
+	private SimpleFilterProvider getFilterProvider(String filterId, String... props) {
+
+		SimpleFilterProvider filterProvider = new SimpleFilterProvider();
 		filterProvider.addFilter(filterId, this.getPropsFilter(props));
 		return filterProvider;
 	}
-	
-	public <T> MappingJacksonValue mapValues(List<T> values, String filterId , String ...props) {
-		MappingJacksonValue mappingJacksonValue = 
-				new MappingJacksonValue(values);
-		mappingJacksonValue.setFilters(this.getFilterProvider(filterId, props));
+
+	public <T> MappingJacksonValue mapValues(T values, String filterId, String... props) {
+//		if(values.getClass().isInstance(List.class)) {
+		SimpleFilterProvider filterProvider = this.getFilterProvider(filterId, props);
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(values);
+		mappingJacksonValue.setFilters(filterProvider);
+//		}
 		return mappingJacksonValue;
 	}
-	
+
 }
