@@ -10,11 +10,17 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity(name = "users")
 @Table(name = "users")
 @SequenceGenerators(value = {
 		@SequenceGenerator(name = "users_sequence", initialValue = 1, allocationSize = 1, sequenceName = "users_sequence")
 })
+@JsonIgnoreProperties(value = {"firstName"})
+@JsonFilter(value = "UserBeanPropsFilter")
 public class User {
 
 	@Id
@@ -26,6 +32,7 @@ public class User {
 	private String lastName;
 	private String username;
 	@Size(min = 5, max = 30, message = "password length 5-30")
+	@JsonIgnore(value = true)
 	private String password;
 
 	public User() {

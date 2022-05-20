@@ -10,6 +10,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.PropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.sgenlecroyant.gorestful.entity.User;
+import com.sgenlecroyant.gorestful.filter.CustomFilter;
 import com.sgenlecroyant.gorestful.service.UserService;
 
 @RestController
@@ -26,12 +32,13 @@ import com.sgenlecroyant.gorestful.service.UserService;
 public class UserController {
 	
 	@Autowired
-	
 	private UserService userService;
+	
+	@Autowired
+	private CustomFilter customFilter;
 	
 	@PostMapping(value = "/users")
 	private ResponseEntity<User> saveUser(@Valid @RequestBody(required = true) User user) {
-		
 		User savedUser = this.userService.saveUser(user);
 		URI localtion = ServletUriComponentsBuilder
 							.fromCurrentRequest()
@@ -59,16 +66,31 @@ public class UserController {
 	}
 	
 	@GetMapping(value = "/usersV2/{id}")
-	private ResponseEntity<User> fetchUserIdV2(@PathVariable Integer id) throws NoSuchMethodException, SecurityException{
+	private ResponseEntity<MappingJacksonValue> fetchUserIdV2(@PathVariable Integer id) throws NoSuchMethodException, SecurityException{
 		User fetchedUser = this.userService.fetchUserById(id);
-		
-		return new ResponseEntity<User>(
-				fetchedUser, HttpStatus.FOUND);
+		String filterId = "UserBeanPropsFilter";
+		FilterProvider filterProvider = this.customFilter.getFilterProvider(filterId, "username", "firstName", "lastName");
+		MappingJacksonValue mappedValues = this.customFilter.mapValues(List.of(fetchedUser), filterId, "username", "firstName", "lastName");
+		mappedValues.setFilters(filterProvider);
+		return new ResponseEntity<MappingJacksonValue>(
+				mappedValues, HttpStatus.FOUND);
 	}
 	
 	@GetMapping(value = "/users")
-	protected ResponseEntity<List<User>> fetchUsers(){
-		return new ResponseEntity<List<User>>(this.userService.fetchUsers(), HttpStatus.OK);
+	protected ResponseEntity<MappingJacksonValue> fetchUsers(){
+		List<User> allUsers = this.userService.fetchUsers();
+		
+		PropertyFilter propertyFilter = SimpleBeanPropertyFilter.filterOutAllExcept("firstName", "lastName");
+		
+		SimpleFilterProvider filterProvider = new SimpleFilterProvider();
+		filterProvider.addFilter("UserBeanPropsFilter", propertyFilter);
+		
+		MappingJacksonValue mappingJacksonValue = 
+				new MappingJacksonValue(allUsers);
+		mappingJacksonValue.setFilters(filterProvider);
+		return new ResponseEntity<MappingJacksonValue>(mappingJacksonValue, HttpStatus.OK);
 	}
+	
+	
 	
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,17 @@ public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptio
 		
 		fieldErrorsMap.put("rejected", rejected);
 		return new ResponseEntity<Object>(fieldErrorsMap, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ResponseEntity<ExceptionResponse> handleResourceNotFound(ResourceNotFoundException exception, WebRequest webRequest){
+		
+		ExceptionResponse response = new ExceptionResponse(new Date(), HttpStatus.NOT_FOUND, exception.getMessage(), webRequest.getDescription(false));
+//		return ResponseEntity
+//					.of(Optional.of(response))
+//					.status(response.getHttpStatus())
+//					.build();
+		return new ResponseEntity<ExceptionResponse>(response, response.getHttpStatus());
 	}
 
 }
